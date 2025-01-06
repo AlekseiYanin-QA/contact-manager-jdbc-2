@@ -41,6 +41,9 @@ dependencies {
     // Opencsv
     implementation group: 'com.opencsv', name: 'opencsv', version: '5.9'
 
+    implementation group: 'org.hibernate.validator', name: 'hibernate-validator', version: '8.0.2.Final'
+    implementation group: 'javax.validation', name: 'validation-api', version: '2.0.1.Final'
+
     // Test dependencies
     testImplementation group: 'org.springframework', name: 'spring-test', version: '6.2.1'
     testImplementation group: 'org.assertj', name: 'assertj-core', version: '3.27.0'
@@ -53,6 +56,9 @@ dependencies {
 
 application {
     mainClass.set('com.example.ContactManagerApplication')
+}
+tasks.withType(JavaCompile).configureEach {
+    options.compilerArgs << '-parameters'
 }
 
 test {

@@ -2,10 +2,20 @@ package com.example.model;
 
 import com.opencsv.bean.CsvBindByName;
 import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import javax.validation.constraints.Email;
+import javax.validation.constraints.NotBlank;
 
 @Data
+@NoArgsConstructor
 public class Contact {
-    @CsvBindByName(column = "Имя") // Убедитесь, что названия соответствуют заголовкам в CSV
+
+    @CsvBindByName(column = "ID")
+    private Long id;
+
+    @CsvBindByName(column = "Имя")
+    @NotBlank(message = "Поле 'Имя' не может быть пустым")
     private String firstName;
 
     @CsvBindByName(column = "Фамилия")
@@ -15,14 +25,15 @@ public class Contact {
     private String phoneNumber;
 
     @CsvBindByName(column = "Email")
+    @Email(message = "Некорректный формат email")
     private String email;
 
-    public String getFirstName() {
-        return firstName;
+    public Long getId() {
+        return id;
     }
 
-    public void setFirstName(String firstName) {
-        this.firstName = firstName;
+    public void setId(Long id) {
+        this.id = id;
     }
 
     public String getEmail() {
@@ -39,6 +50,14 @@ public class Contact {
 
     public void setPhoneNumber(String phoneNumber) {
         this.phoneNumber = phoneNumber;
+    }
+
+    public String getFirstName() {
+        return firstName;
+    }
+
+    public void setFirstName(String firstName) {
+        this.firstName = firstName;
     }
 
     public String getLastName() {

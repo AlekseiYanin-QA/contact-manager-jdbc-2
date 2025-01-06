@@ -17,28 +17,17 @@ public class ContactDao {
     private final NamedParameterJdbcTemplate namedParameterJdbcTemplate;
     private static final Logger logger = LoggerFactory.getLogger(ContactDao.class);
 
-    // SQL-запросы как константы
-    private static final String SELECT_ALL_CONTACTS = "SELECT * FROM contacts";
-    private static final String DELETE_ALL_CONTACTS = "DELETE FROM contacts";
-    private static final String DELETE_CONTACT_BY_ID = "DELETE FROM contacts WHERE id = :id";
-    private static final String SELECT_COUNT_BY_ID = "SELECT COUNT(*) FROM contacts WHERE id = :id";
-    private static final String SELECT_CONTACT_BY_ID = "SELECT * FROM contacts WHERE id = :id";
-    private static final String UPDATE_CONTACT = "UPDATE contacts SET first_name = :firstName, last_name = :lastName, phone_number = :phoneNumber, email = :email WHERE id = :id";
-    private static final String SELECT_COUNT_BY_PHONE_NUMBER = "SELECT COUNT(*) FROM contacts WHERE phone_number = :phoneNumber";
-    private static final String SELECT_COUNT_BY_EMAIL = "SELECT COUNT(*) FROM contacts WHERE email = :email";
-    private static final String INSERT_CONTACT = "INSERT INTO contacts (first_name, last_name, phone_number, email) VALUES (:firstName, :lastName, :phoneNumber, :email)";
-
     public ContactDao(NamedParameterJdbcTemplate namedParameterJdbcTemplate) {
         this.namedParameterJdbcTemplate = namedParameterJdbcTemplate;
     }
 
     public List<Contact> findAll() {
-        return namedParameterJdbcTemplate.query(SELECT_ALL_CONTACTS, new ContactRowMapper());
+        return namedParameterJdbcTemplate.query(SqlQueries.SELECT_ALL_CONTACTS.getQuery(), new ContactRowMapper());
     }
 
     public void deleteAll() {
         try {
-            namedParameterJdbcTemplate.update(DELETE_ALL_CONTACTS, Map.of());
+            namedParameterJdbcTemplate.update(SqlQueries.DELETE_ALL_CONTACTS.getQuery(), Map.of());
             logger.info("All contacts deleted successfully.");
         } catch (DataAccessException e) {
             logger.error("Error deleting all contacts: {}", e.getMessage());
@@ -48,7 +37,7 @@ public class ContactDao {
 
     public void deleteById(Long id) {
         try {
-            int rowsAffected = namedParameterJdbcTemplate.update(DELETE_CONTACT_BY_ID, Map.of("id", id));
+            int rowsAffected = namedParameterJdbcTemplate.update(SqlQueries.DELETE_CONTACT_BY_ID.getQuery(), Map.of("id", id));
             if (rowsAffected == 0) {
                 logger.warn("No contact found with ID {}", id);
                 throw new NoSuchElementException("Контакт с ID " + id + " не найден.");
@@ -61,12 +50,12 @@ public class ContactDao {
     }
 
     public boolean existsById(Long id) {
-        Integer count = namedParameterJdbcTemplate.queryForObject(SELECT_COUNT_BY_ID, Map.of("id", id), Integer.class);
+        Integer count = namedParameterJdbcTemplate.queryForObject(SqlQueries.SELECT_COUNT_BY_ID.getQuery(), Map.of("id", id), Integer.class);
         return count != null && count > 0;
     }
 
     public Optional<Contact> findById(Long id) {
-        List<Contact> contacts = namedParameterJdbcTemplate.query(SELECT_CONTACT_BY_ID, Map.of("id", id), new ContactRowMapper());
+        List<Contact> contacts = namedParameterJdbcTemplate.query(SqlQueries.SELECT_CONTACT_BY_ID.getQuery(), Map.of("id", id), new ContactRowMapper());
         if (contacts.isEmpty()) {
             logger.warn("Контакт с ID {} не найден.", id);
             return Optional.empty();
@@ -76,7 +65,7 @@ public class ContactDao {
 
     public void update(Contact contact) {
         try {
-            int rowsAffected = namedParameterJdbcTemplate.update(UPDATE_CONTACT, Map.of(
+            int rowsAffected = namedParameterJdbcTemplate.update(SqlQueries.UPDATE_CONTACT.getQuery(), Map.of(
                     "firstName", contact.getFirstName(),
                     "lastName", contact.getLastName(),
                     "phoneNumber", contact.getPhoneNumber(),
@@ -95,19 +84,19 @@ public class ContactDao {
     }
 
     public boolean existsByPhoneNumber(String phoneNumber) {
-        Integer count = namedParameterJdbcTemplate.queryForObject(SELECT_COUNT_BY_PHONE_NUMBER, Map.of("phoneNumber", phoneNumber), Integer.class);
+        Integer count = namedParameterJdbcTemplate.queryForObject(SqlQueries.SELECT_COUNT_BY_PHONE_NUMBER.getQuery(), Map.of("phoneNumber", phoneNumber), Integer.class);
         return count != null && count > 0;
     }
 
     public boolean existsByEmail(String email) {
-        Integer count = namedParameterJdbcTemplate.queryForObject(SELECT_COUNT_BY_EMAIL, Map.of("email", email), Integer.class);
+        Integer count = namedParameterJdbcTemplate.queryForObject(SqlQueries.SELECT_COUNT_BY_EMAIL.getQuery(), Map.of("email", email), Integer.class);
         return count != null && count > 0;
     }
 
     public void batchInsert(List<Contact> contacts) {
         try {
             for (Contact contact : contacts) {
-                namedParameterJdbcTemplate.update(INSERT_CONTACT, Map.of(
+                namedParameterJdbcTemplate.update(SqlQueries.INSERT_CONTACT.getQuery(), Map.of(
                         "firstName", contact.getFirstName(),
                         "lastName", contact.getLastName(),
                         "phoneNumber", contact.getPhoneNumber(),

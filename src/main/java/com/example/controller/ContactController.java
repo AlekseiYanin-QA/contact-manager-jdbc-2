@@ -2,6 +2,7 @@ package com.example.controller;
 
 import com.example.model.Contact;
 import com.example.service.ContactService;
+import com.example.service.UploadResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataAccessException;
@@ -29,11 +30,13 @@ public class ContactController {
             logger.warn("Attempted to upload an empty file.");
             return ResponseEntity.badRequest().body("Файл не должен быть пустым");
         }
-
         try {
-            contactService.uploadContacts(file);
+            // Получаем результат загрузки из сервиса
+            UploadResult result = contactService.uploadContacts(file);
             logger.info("Contacts uploaded successfully from file: {}", file.getOriginalFilename());
-            return ResponseEntity.ok("Контакты успешно загружены!");
+
+            return ResponseEntity.ok("Контакты успешно загружены! Уникальных контактов: " + result.getUniqueCount() +
+                    ", Пропущено дубликатов: " + result.getDuplicateCount());
         } catch (Exception e) {
             logger.error("Failed to upload contacts: {}", e.getMessage(), e);
             return ResponseEntity.status(500).body("Не удалось загрузить контакты: " + e.getMessage());
@@ -66,7 +69,6 @@ public class ContactController {
 
     @PutMapping("/update/{id}")
     public ResponseEntity<String> updateContact(@PathVariable Long id, @RequestBody Contact contact) {
-        // Add validation logic here if necessary
         contact.setId(id);
 
         try {
